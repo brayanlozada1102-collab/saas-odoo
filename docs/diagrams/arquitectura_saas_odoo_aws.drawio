@@ -1,0 +1,350 @@
+<mxfile host="app.diagrams.net" modified="2026-11-09T12:00:00.000Z" agent="Antigravity Enterprise Architect" version="24.0.0" type="device">
+  <diagram id="aws-saas-odoo-architecture" name="Arquitectura SaaS Odoo AWS - Zero EC2">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1200" background="#F8FAFC" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- HEADER BANNER -->
+        <mxCell id="header_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0F172A;strokeColor=#1E293B;arcSize=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1840" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="header_title" value="ARQUITECTURA CLOUD SAAS MULTI-TENANT DE ODOO 18 SOBRE AWS (ZERO-EC2)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="60" y="32" width="1000" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="header_subtitle" value="100% Servicios Administrados y Serverless • AWS Fargate • RDS PostgreSQL Multi-AZ • EFS Filestore • Step Functions Control Plane" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#94A3B8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="950" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="header_badge" value="CERO INSTANCIAS EC2&#xa;ALTA DISPONIBILIDAD MULTI-AZ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="32" width="220" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- USERS / ACTORS -->
+        <mxCell id="user_clients" value="Usuarios Clientes Finales&#xa;(Navegadores &amp; Móviles)&#xa;*.saasodoo.com" style="shape=mxgraph.aws4.users;whiteSpace=wrap;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#1E293B;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user_admin" value="Administradores SaaS&#xa;(Portal Onboarding &amp; Ops)&#xa;admin.saasodoo.com" style="shape=mxgraph.aws4.user;whiteSpace=wrap;html=1;fillColor=#232F3E;strokeColor=none;fontColor=#1E293B;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="60" y="860" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EDGE / PERIMETER SECURITY LAYER -->
+        <mxCell id="grp_edge" value="Capa de Edge, DNS y Protección Perimetral" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#3B82F6;strokeWidth=2;dashed=1;verticalAlign=top;align=left;spacingLeft=15;spacingTop=10;fontColor=#1E40AF;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="120" width="220" height="520" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r53" value="Amazon Route 53&#xa;• Zona Pública: saasodoo.com&#xa;• Wildcard DNS: *.saasodoo.com&#xa;• Custom Domains CNAME&#xa;• SLA 100% Disponibilidad" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C4FFF;strokeColor=#7330EA;fontColor=#FFFFFF;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="160" width="180" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="waf" value="AWS WAF (Web ACL)&#xa;• AWSManagedRules Common&#xa;• SQL Injection Prevention&#xa;• XSS &amp; Bad Inputs RuleSet&#xa;• Rate Limiting (/web/login)&#xa;• Mitigación OWASP Top 10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E11D48;strokeColor=#BE123C;fontColor=#FFFFFF;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="275" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cloudfront" value="Amazon CloudFront&#xa;• Distribución CDN Global&#xa;• Edge Cache: /web/static/*&#xa;• SSL/TLS Termination (Edge)&#xa;• AWS Shield Standard (DDoS)&#xa;• Bypass Cache en dinámicos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C4FFF;strokeColor=#7330EA;fontColor=#FFFFFF;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="405" width="180" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="acm" value="AWS Certificate Mgr (ACM)&#xa;• Certificado SSL/TLS Gratuito&#xa;• Wildcard: *.saasodoo.com&#xa;• Renovación Automática&#xa;• Protocolos TLS 1.2 / 1.3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="200" y="525" width="180" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- AWS REGION & VPC -->
+        <mxCell id="grp_region" value="AWS Region: us-east-1 (N. Virginia)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#475569;strokeWidth=2;verticalAlign=top;align=left;spacingLeft=20;spacingTop=10;fontColor=#0F172A;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="120" width="1440" height="660" as="geometry" />
+        </mxCell>
+
+        <mxCell id="grp_vpc" value="Amazon VPC: 10.0.0.0/16 (Red Privada Aislada y Multi-AZ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#64748B;strokeWidth=2;dashed=0;verticalAlign=top;align=left;spacingLeft=15;spacingTop=10;fontColor=#334155;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="160" width="1400" height="600" as="geometry" />
+        </mxCell>
+
+        <!-- PUBLIC SUBNETS (ALB) -->
+        <mxCell id="grp_public_subnets" value="Subnets Públicas (10.0.1.0/24, 10.0.2.0/24) • Multi-AZ Internet Ingress" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0284C7;strokeWidth=1;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#0369A1;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="200" width="220" height="540" as="geometry" />
+        </mxCell>
+
+        <mxCell id="alb" value="Application Load Balancer&#xa;(Internet-Facing Multi-AZ)&#xa;───────────────────────&#xa;• Terminación HTTPS (ACM)&#xa;• Host-based Routing Rules:&#xa;  - acme.saasodoo.com ➔ TG-Acme&#xa;  - globex.saas.com ➔ TG-Globex&#xa;• WebSocket (/websocket) OK&#xa;• Sticky Sessions habilitadas&#xa;• Health Checks: /web/health" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="495" y="250" width="190" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="nat_gw" value="NAT Gateway Multi-AZ&#xa;• Salida segura para tareas ECS&#xa;• Descarga de parches y APIs&#xa;• Tráfico saliente a Webhooks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="495" y="520" width="190" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="igw" value="Internet Gateway (IGW)&#xa;Conexión Bidireccional Internet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#334155;strokeColor=#1E293B;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="495" y="630" width="190" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- AVAILABILITY ZONE A -->
+        <mxCell id="grp_az_a" value="Availability Zone: us-east-1a" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#F59E0B;strokeWidth=2;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#B45309;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="200" width="550" height="540" as="geometry" />
+        </mxCell>
+
+        <!-- AZ-A PRIVATE APP SUBNET -->
+        <mxCell id="sub_app_a" value="Subnet Privada App AZ-A (10.0.10.0/24) • Cómputo Odoo 18" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;strokeWidth=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="735" y="235" width="520" height="245" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_task_t1_a" value="ECS Fargate Task - Tenant ACME&#xa;• Contenedor Odoo 18 (Python 3.12)&#xa;• Módulos: auth_oauth, contacts, social&#xa;• vCPU: 1.0 | RAM: 2 GB (Dedicado)&#xa;• Montaje EFS: /var/lib/odoo/filestore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="750" y="265" width="235" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_task_t2_a" value="ECS Fargate Task - Tenant GLOBEX&#xa;• Contenedor Odoo 18 (Python 3.12)&#xa;• Módulos corporativos estandarizados&#xa;• vCPU: 0.5 | RAM: 1 GB (Dedicado)&#xa;• Montaje EFS: /var/lib/odoo/filestore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="265" width="235" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_task_tn_a" value="ECS Fargate Tasks - Tenant N...&#xa;• Auto Scaling Dinámico (Target Tracking 65% CPU)&#xa;• Cero interferencia entre clientes (Noisy Neighbor Free)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="750" y="375" width="490" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="badge_fargate_a" value="AWS FARGATE: CERO ADMINISTRACIÓN DE SERVIDORES EC2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontSize=9;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="750" y="430" width="490" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- AZ-A ISOLATED DATA SUBNET -->
+        <mxCell id="sub_data_a" value="Subnet Aislada Datos AZ-A (10.0.100.0/24) • Sin Salida a Internet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="735" y="495" width="520" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rds_primary" value="Amazon RDS PostgreSQL 16&#xa;(PRIMARY MASTER - AZ-A)&#xa;───────────────────────&#xa;• Multi-AZ Synchronous Replication&#xa;• Storage Auto-Scaling (GP3 SSD)&#xa;• db_tenant_acme (usr_acme)&#xa;• db_tenant_globex (usr_globex)&#xa;• db_tenant_N... (Aislamiento DB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B82F6;strokeColor=#1D4ED8;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="750" y="525" width="235" height="135" as="geometry" />
+        </mxCell>
+
+        <mxCell id="efs_target_a" value="Amazon EFS Mount Target (AZ-A)&#xa;──────────────────────────────&#xa;• NFSv4 sobre TLS 1.3 (-o tls)&#xa;• EFS Access Point ACME:&#xa;  /tenants/acme/filestore (UID:101)&#xa;• EFS Access Point GLOBEX:&#xa;  /tenants/globex/filestore (UID:101)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#047857;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="525" width="235" height="135" as="geometry" />
+        </mxCell>
+
+        <mxCell id="efs_lifecycle" value="EFS Lifecycle Mgmt: Transición automática a Infrequent Access (IA) tras 30 días (-92% costo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#10B981;fontColor=#065F46;fontSize=9;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="750" y="675" width="490" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- AVAILABILITY ZONE B -->
+        <mxCell id="grp_az_b" value="Availability Zone: us-east-1b (Standby &amp; HA Redundancy)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#10B981;strokeWidth=2;dashed=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#047857;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1290" y="200" width="550" height="540" as="geometry" />
+        </mxCell>
+
+        <!-- AZ-B PRIVATE APP SUBNET -->
+        <mxCell id="sub_app_b" value="Subnet Privada App AZ-B (10.0.20.0/24) • Réplicas Activas Odoo 18" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E2E8F0;strokeWidth=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1305" y="235" width="520" height="245" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_task_t1_b" value="ECS Fargate Task - Tenant ACME (Réplica)&#xa;• Ejecución activa y concurrente en AZ-B&#xa;• Sesión persistente y balanceo ALB&#xa;• Cero downtime ante caída de AZ-A" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="265" width="235" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_task_t2_b" value="ECS Fargate Task - Tenant GLOBEX (Réplica)&#xa;• Ejecución activa y concurrente en AZ-B&#xa;• Alta disponibilidad Multi-AZ activa&#xa;• Auto-healing en &lt; 45 segundos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="265" width="235" height="95" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecs_cluster_label" value="Amazon ECS Cluster (Capacity Provider: FARGATE &amp; FARGATE_SPOT)&#xa;Orquestación Serverless • Despliegues Rolling Update Zero-Downtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F59E0B;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="375" width="490" height="45" as="geometry" />
+        </mxCell>
+
+        <mxCell id="badge_fargate_b" value="AUTO-HEALING Y REDISTRIBUCIÓN MULTI-AZ SIN SERVIDORES FÍSICOS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontSize=9;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="430" width="490" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- AZ-B ISOLATED DATA SUBNET -->
+        <mxCell id="sub_data_b" value="Subnet Aislada Datos AZ-B (10.0.200.0/24) • Persistencia Redundante" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1;verticalAlign=top;align=left;spacingLeft=10;spacingTop=5;fontColor=#64748B;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1305" y="495" width="520" height="230" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rds_standby" value="Amazon RDS PostgreSQL 16&#xa;(STANDBY REPLICA - AZ-B)&#xa;───────────────────────&#xa;• Replicación síncrona a nivel bloque&#xa;• Failover Automático en &lt; 60 seg&#xa;• Actualización de CNAME transparente&#xa;• RPO = 0 (Cero pérdida de datos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B82F6;strokeColor=#1D4ED8;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="525" width="235" height="135" as="geometry" />
+        </mxCell>
+
+        <mxCell id="efs_target_b" value="Amazon EFS Mount Target (AZ-B)&#xa;──────────────────────────────&#xa;• Almacenamiento Regional Multi-AZ&#xa;• Datos replicados sincrónicamente&#xa;• Alta disponibilidad nativa&#xa;• Cifrado KMS en reposo (AES-256)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#047857;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1575" y="525" width="235" height="135" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rds_failover_badge" value="FAILOVER SÍNCRONO AUTOMÁTICO EN &lt; 60 SEGUNDOS CONMUTADO POR AWS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#3B82F6;fontColor=#1E40AF;fontSize=9;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="675" width="490" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- SAAS CONTROL PLANE & AUTOMATION LAYER (LOWER ROW) -->
+        <mxCell id="grp_control_plane" value="SaaS Control Plane &amp; Motor de Aprovisionamiento Automatizado (100% Serverless - Onboarding en &lt; 3 minutos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDF2F8;strokeColor=#EC4899;strokeWidth=2;dashed=0;verticalAlign=top;align=left;spacingLeft=15;spacingTop=10;fontColor=#9D174D;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="180" y="800" width="1170" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="apigw" value="Amazon API Gateway&#xa;• REST API / Onboarding&#xa;• Auth: Cognito / JWT&#xa;• POST /api/v1/tenants&#xa;• PUT /api/v1/tenants/scale" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E11D48;strokeColor=#BE123C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="200" y="850" width="160" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="step_functions" value="AWS Step Functions&#xa;(Saga Orchestrator)&#xa;───────────────────&#xa;• Flujo visual idempotente&#xa;• Reintentos automáticos&#xa;• Rollback ante fallos (Saga)&#xa;• Provisiona en &lt; 3 minutos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E11D48;strokeColor=#BE123C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="385" y="850" width="175" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_secrets" value="Lambda: Gen Secrets&#xa;Crea contraseñas criptográficas en Secrets Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="840" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_db" value="Lambda: DB Provisioner&#xa;Crea Database y Rol usr_tenant en RDS Postgres" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="890" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_efs" value="Lambda: EFS Provisioner&#xa;Crea Access Point /tenants/{id} con UID 101" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="940" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_fargate" value="Lambda: ECS Provisioner&#xa;Crea Task Def &amp; ECS Service Fargate con réplicas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="990" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_routing" value="Lambda: ALB &amp; DNS&#xa;Crea Target Group, Listener Rule y CNAME R53" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="1040" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lambda_notify" value="Lambda: Notifier&#xa;Despacha email temporal de acceso vía Amazon SES" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="585" y="1090" width="170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dynamodb" value="Amazon DynamoDB&#xa;(Tenant Registry)&#xa;────────────────&#xa;• Partition Key: tenant_id&#xa;• Status: PROVISIONING,&#xa;  ACTIVE, SCALING&#xa;• Plan Tier &amp; Quotas&#xa;• Auditoría de Creación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B82F6;strokeColor=#1D4ED8;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="785" y="850" width="170" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ses" value="Amazon SES&#xa;• Notificación de bienvenida&#xa;• URL y credenciales de acceso&#xa;• Alertas de facturación" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="985" y="850" width="170" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eventbridge" value="Amazon EventBridge&#xa;• Bus de eventos SaaS&#xa;• Orquestación asíncrona&#xa;• Disparador de mantenimientos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E11D48;strokeColor=#BE123C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="985" y="935" width="170" height="75" as="geometry" />
+        </mxCell>
+
+        <mxCell id="control_plane_summary" value="PATRÓN SAGA ORCHESTRATOR: APROVISIONAMIENTO Y DESAPROVISIONAMIENTO 100% IDEMPOTENTE CON ROLLBACK AUTOMÁTICO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE7F3;strokeColor=#EC4899;fontColor=#9D174D;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="1115" width="955" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- SECURITY, SECRETS, GOVERNANCE & BACKUP LAYER (RIGHT LOWER) -->
+        <mxCell id="grp_governance" value="Seguridad, Secretos, Gobernanza &amp; Backup Centralizado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0FDF4;strokeColor=#16A34A;strokeWidth=2;dashed=0;verticalAlign=top;align=left;spacingLeft=15;spacingTop=10;fontColor=#15803D;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="800" width="500" height="360" as="geometry" />
+        </mxCell>
+
+        <mxCell id="secrets_mgr" value="AWS Secrets Manager&#xa;• Credenciales por Tenant cifradas con KMS&#xa;• Inyección directa a Fargate sin texto plano&#xa;• Rotación automática de contraseñas de BD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="845" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="kms" value="AWS KMS (Key Mgmt Service)&#xa;• Llaves CMK gestionadas por cliente&#xa;• Cifrado AES-256 en reposo (RDS, EFS, Logs)&#xa;• Rotación anual de llaves criptográficas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="845" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="aws_backup" value="AWS Backup (Plan Centralizado Diario)&#xa;• Snapshots diarios automáticos a las 02:00 AM&#xa;• Respaldo consistente de RDS PostgreSQL y EFS&#xa;• Retención: 30 días • Point-in-Time Recovery (35d)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#047857;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="925" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cloudwatch" value="Amazon CloudWatch (Logs &amp; Métricas)&#xa;• Centralización logs de Odoo (/ecs/saas-odoo)&#xa;• Alarmas de CPU, Memoria, IOPS y Errores 5XX&#xa;• Cost Allocation Tags por TenantId" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="925" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ecr" value="Amazon ECR (Container Registry)&#xa;• Imagen Odoo 18 con Addons corporativos&#xa;• Escaneo de vulnerabilidades continuo&#xa;• Tags semánticos de producción (v18.0.x)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="1010" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="guardduty" value="AWS GuardDuty &amp; CloudTrail&#xa;• Detección de amenazas inteligentes&#xa;• Auditoría forense de accesos a secretos&#xa;• Cumplimiento SOC2 / ISO 27001" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="1010" width="220" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="compliance_badge" value="DEFENSE IN DEPTH: CIFRADO EN TRÁNSITO (TLS 1.3) Y REPOSO (KMS AES-256) • AUDITORÍA COMPLETA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#166534;fontSize=9;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="1090" width="460" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- FLOW CONNECTORS -->
+        <mxCell id="conn_user_edge" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=2;" edge="1" parent="1" source="user_clients" target="waf">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn_user_edge_lbl" value="1. HTTPS / DNS" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1E40AF;" vertex="1" connectable="0" parent="conn_user_edge">
+          <mxGeometry x="-0.2" y="2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_waf_cf" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=2;" edge="1" parent="1" source="waf" target="cloudfront">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn_cf_alb" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2563EB;strokeWidth=2;" edge="1" parent="1" source="cloudfront" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn_cf_alb_lbl" value="2. Peticiones Dinámicas" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontColor=#1E40AF;" vertex="1" connectable="0" parent="conn_cf_alb">
+          <mxGeometry x="-0.1" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_alb_fargate_a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284C7;strokeWidth=2;" edge="1" parent="1" source="alb" target="ecs_task_t1_a">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="705" y="300" />
+              <mxPoint x="705" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn_alb_fargate_a_lbl" value="3. Host: acme.saasodoo.com" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#0369A1;" vertex="1" connectable="0" parent="conn_alb_fargate_a">
+          <mxGeometry x="-0.3" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_alb_fargate_b" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0284C7;strokeWidth=2;" edge="1" parent="1" source="alb" target="ecs_task_t1_b">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="705" y="340" />
+              <mxPoint x="1270" y="340" />
+              <mxPoint x="1270" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_fargate_rds_a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3B82F6;strokeWidth=2;" edge="1" parent="1" source="ecs_task_t1_a" target="rds_primary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn_fargate_rds_a_lbl" value="4. SQL Port 5432 (SSL)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#1E40AF;" vertex="1" connectable="0" parent="conn_fargate_rds_a">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_fargate_efs_a" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#10B981;strokeWidth=2;" edge="1" parent="1" source="ecs_task_t1_a" target="efs_target_a">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="480" />
+              <mxPoint x="1080" y="480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn_fargate_efs_a_lbl" value="5. NFSv4 TLS Port 2049" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#065F46;" vertex="1" connectable="0" parent="conn_fargate_efs_a">
+          <mxGeometry x="0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_rds_sync" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="rds_primary" target="rds_standby">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn_rds_sync_lbl" value="Replicación Síncrona a nivel de bloque" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#B91C1C;" vertex="1" connectable="0" parent="conn_rds_sync">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ADMIN TO CONTROL PLANE -->
+        <mxCell id="conn_admin_apigw" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EC4899;strokeWidth=2;" edge="1" parent="1" source="user_admin" target="apigw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="conn_admin_apigw_lbl" value="POST /tenants" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontColor=#9D174D;" vertex="1" connectable="0" parent="conn_admin_apigw">
+          <mxGeometry x="-0.2" y="1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="conn_apigw_sfn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EC4899;strokeWidth=2;" edge="1" parent="1" source="apigw" target="step_functions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conn_sfn_lambdas" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EC4899;strokeWidth=2;" edge="1" parent="1" source="step_functions" target="lambda_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 750" width="100%" height="100%" style="background-color:#0B0F19; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="stepHeaderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#831843" />
+      <stop offset="100%" stop-color="#4C0519" />
+    </linearGradient>
+    <linearGradient id="stepBoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <marker id="arrowGreen2" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#10B981" />
+    </marker>
+    <marker id="arrowRed2" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#EF4444" />
+    </marker>
+  </defs>
+
+  <!-- TITLE -->
+  <rect x="30" y="20" width="1340" height="70" rx="10" fill="url(#stepHeaderGrad)" stroke="#BE185D" stroke-width="1.5" />
+  <text x="60" y="50" fill="#FFFFFF" font-size="20" font-weight="bold">FLUJO DE APROVISIONAMIENTO AUTOMATIZADO DE TENANTS (SAAS CONTROL PLANE)</text>
+  <text x="60" y="73" fill="#FCE7F3" font-size="12">AWS Step Functions • Patrón Saga Orchestrator con Rollback Automático • Duración: &lt; 3 Minutos</text>
+
+  <!-- ROW 1: FORWARD STEPS (1 TO 4) -->
+  <!-- Start -->
+  <circle cx="90" cy="180" r="45" fill="#065F46" stroke="#10B981" stroke-width="2" />
+  <text x="90" y="175" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">Inicio</text>
+  <text x="90" y="190" fill="#A7F3D0" font-size="9" text-anchor="middle">POST /tenants</text>
+
+  <!-- Step 1 -->
+  <rect x="180" y="130" width="240" height="100" rx="8" fill="url(#stepBoxGrad)" stroke="#38BDF8" stroke-width="1.5" />
+  <rect x="180" y="130" width="240" height="26" rx="8" fill="#0369A1" />
+  <text x="300" y="148" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">1. Validar Solicitud y DNS</text>
+  <text x="195" y="175" fill="#CBD5E1" font-size="10">• Valida disponibilidad subdominio</text>
+  <text x="195" y="192" fill="#CBD5E1" font-size="10">• Registra estado 'PROVISIONING'</text>
+  <text x="195" y="209" fill="#38BDF8" font-size="10">• Persiste metadata en DynamoDB</text>
+
+  <!-- Step 2 -->
+  <rect x="470" y="130" width="240" height="100" rx="8" fill="url(#stepBoxGrad)" stroke="#EF4444" stroke-width="1.5" />
+  <rect x="470" y="130" width="240" height="26" rx="8" fill="#B91C1C" />
+  <text x="590" y="148" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">2. Generar Secretos (KMS)</text>
+  <text x="485" y="175" fill="#CBD5E1" font-size="10">• Contraseña DB (32 caracteres)</text>
+  <text x="485" y="192" fill="#CBD5E1" font-size="10">• Master Admin Password de Odoo</text>
+  <text x="485" y="209" fill="#F87171" font-size="10">• Almacena en Secrets Manager</text>
+
+  <!-- Step 3 -->
+  <rect x="760" y="130" width="260" height="100" rx="8" fill="url(#stepBoxGrad)" stroke="#3B82F6" stroke-width="1.5" />
+  <rect x="760" y="130" width="260" height="26" rx="8" fill="#1D4ED8" />
+  <text x="890" y="148" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">3. Provisionar RDS PostgreSQL</text>
+  <text x="775" y="175" fill="#CBD5E1" font-size="10">• CREATE DATABASE db_tenant_xxx</text>
+  <text x="775" y="192" fill="#CBD5E1" font-size="10">• CREATE USER usr_tenant_xxx</text>
+  <text x="775" y="209" fill="#60A5FA" font-size="10">• GRANT permisos estrictos exclusivos</text>
+
+  <!-- Step 4 -->
+  <rect x="1070" y="130" width="270" height="100" rx="8" fill="url(#stepBoxGrad)" stroke="#10B981" stroke-width="1.5" />
+  <rect x="1070" y="130" width="270" height="26" rx="8" fill="#047857" />
+  <text x="1205" y="148" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">4. Provisionar Almacenamiento EFS</text>
+  <text x="1085" y="175" fill="#CBD5E1" font-size="10">• Crea EFS Access Point dedicado</text>
+  <text x="1085" y="192" fill="#CBD5E1" font-size="10">• Path: /tenants/{tenant_id}/filestore</text>
+  <text x="1085" y="209" fill="#34D399" font-size="10">• Enforce POSIX UID 101, GID 101</text>
+
+  <!-- ROW 2: FORWARD STEPS (5 TO 8) -->
+  <!-- Step 5 -->
+  <rect x="1070" y="290" width="270" height="105" rx="8" fill="url(#stepBoxGrad)" stroke="#F59E0B" stroke-width="1.5" />
+  <rect x="1070" y="290" width="270" height="26" rx="8" fill="#D97706" />
+  <text x="1205" y="308" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">5. Desplegar Tareas ECS Fargate</text>
+  <text x="1085" y="333" fill="#CBD5E1" font-size="10">• Registra Task Definition Odoo 18</text>
+  <text x="1085" y="350" fill="#CBD5E1" font-size="10">• Crea ECS Service (2 réplicas Multi-AZ)</text>
+  <text x="1085" y="367" fill="#FBBF24" font-size="10">• Inyecta Secrets &amp; EFS Access Point</text>
+
+  <!-- Step 6 -->
+  <rect x="760" y="290" width="260" height="105" rx="8" fill="url(#stepBoxGrad)" stroke="#0284C7" stroke-width="1.5" />
+  <rect x="760" y="290" width="260" height="26" rx="8" fill="#0369A1" />
+  <text x="890" y="308" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">6. Configurar Routing &amp; ALB</text>
+  <text x="775" y="333" fill="#CBD5E1" font-size="10">• Crea Target Group (Port 8069)</text>
+  <text x="775" y="350" fill="#CBD5E1" font-size="10">• Listener Rule: Host == tenant.saas.com</text>
+  <text x="775" y="367" fill="#38BDF8" font-size="10">• Certificado Wildcard SSL activo (ACM)</text>
+
+  <!-- Step 7 -->
+  <rect x="470" y="290" width="240" height="105" rx="8" fill="url(#stepBoxGrad)" stroke="#64748B" stroke-width="1.5" />
+  <rect x="470" y="290" width="240" height="26" rx="8" fill="#334155" />
+  <text x="590" y="308" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">7. Verificación de Salud</text>
+  <text x="485" y="333" fill="#CBD5E1" font-size="10">• Polling al endpoint /web/health</text>
+  <text x="485" y="350" fill="#CBD5E1" font-size="10">• Espera estado 'HEALTHY' en ALB</text>
+  <text x="485" y="367" fill="#34D399" font-size="10">• Reintentos automáticos (Max 5)</text>
+
+  <!-- Step 8 -->
+  <rect x="180" y="290" width="240" height="105" rx="8" fill="url(#stepBoxGrad)" stroke="#10B981" stroke-width="1.5" />
+  <rect x="180" y="290" width="240" height="26" rx="8" fill="#047857" />
+  <text x="300" y="308" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">8. Notificación y Activación</text>
+  <text x="195" y="333" fill="#CBD5E1" font-size="10">• Actualiza DynamoDB a 'ACTIVE'</text>
+  <text x="195" y="350" fill="#CBD5E1" font-size="10">• Despacha Email con Amazon SES</text>
+  <text x="195" y="367" fill="#34D399" font-size="10">• Entrega URL y credenciales</text>
+
+  <!-- End Success -->
+  <circle cx="90" cy="342" r="45" fill="#065F46" stroke="#10B981" stroke-width="2" />
+  <text x="90" y="337" fill="#FFFFFF" font-size="11" font-weight="bold" text-anchor="middle">Listo</text>
+  <text x="90" y="352" fill="#A7F3D0" font-size="9" text-anchor="middle">&lt; 3 minutos</text>
+
+  <!-- ROW 3: SAGA ROLLBACK & COMPENSATING ACTIONS -->
+  <rect x="30" y="445" width="1340" height="260" rx="10" fill="#1C1014" stroke="#DC2626" stroke-width="2" stroke-dasharray="6" />
+  <text x="60" y="475" fill="#F87171" font-size="13" font-weight="bold">PATRÓN SAGA ORCHESTRATOR: COMPENSACIONES AUTOMÁTICAS (ROLLBACK ANTE ERRORES)</text>
+  <text x="60" y="495" fill="#FCA5A5" font-size="10.5">Si ocurre un fallo en cualquier etapa del aprovisionamiento, Step Functions ejecuta la reversión en orden inverso:</text>
+
+  <!-- Compensations -->
+  <rect x="1070" y="515" width="270" height="80" rx="6" fill="#2E1018" stroke="#EF4444" />
+  <text x="1205" y="538" fill="#FCA5A5" font-size="11" font-weight="bold" text-anchor="middle">Revertir ALB y Routing</text>
+  <text x="1085" y="560" fill="#E2E8F0" font-size="9.5">• Elimina regla Listener en ALB</text>
+  <text x="1085" y="575" fill="#E2E8F0" font-size="9.5">• Elimina Target Group huérfano</text>
+
+  <rect x="760" y="515" width="260" height="80" rx="6" fill="#2E1018" stroke="#EF4444" />
+  <text x="890" y="538" fill="#FCA5A5" font-size="11" font-weight="bold" text-anchor="middle">Revertir ECS Fargate</text>
+  <text x="775" y="560" fill="#E2E8F0" font-size="9.5">• Elimina ECS Service del tenant</text>
+  <text x="775" y="575" fill="#E2E8F0" font-size="9.5">• Desregistra Task Definition</text>
+
+  <rect x="470" y="515" width="240" height="80" rx="6" fill="#2E1018" stroke="#EF4444" />
+  <text x="590" y="538" fill="#FCA5A5" font-size="11" font-weight="bold" text-anchor="middle">Revertir EFS Storage</text>
+  <text x="485" y="560" fill="#E2E8F0" font-size="9.5">• Elimina Access Point de EFS</text>
+  <text x="485" y="575" fill="#E2E8F0" font-size="9.5">• Purga directorio /tenants/{id}</text>
+
+  <rect x="180" y="515" width="240" height="80" rx="6" fill="#2E1018" stroke="#EF4444" />
+  <text x="300" y="538" fill="#FCA5A5" font-size="11" font-weight="bold" text-anchor="middle">Revertir RDS PostgreSQL</text>
+  <text x="195" y="560" fill="#E2E8F0" font-size="9.5">• DROP DATABASE db_tenant_xxx</text>
+  <text x="195" y="575" fill="#E2E8F0" font-size="9.5">• DROP USER usr_tenant_xxx</text>
+
+  <!-- Rollback Final Banner -->
+  <rect x="180" y="615" width="1160" height="60" rx="6" fill="#450A0A" stroke="#B91C1C" />
+  <text x="760" y="640" fill="#FECACA" font-size="11" font-weight="bold" text-anchor="middle">Eliminación de Secretos en AWS Secrets Manager  •  Registro de Estado 'FAILED_PROVISIONING' en DynamoDB</text>
+  <text x="760" y="658" fill="#34D399" font-size="10.5" text-anchor="middle">➔ CERO RECURSOS HUÉRFANOS • CERO SOBRECOSTOS EN LA CUENTA DE AWS • ALERTA INMEDIATA A SRE VÍA CLOUDWATCH</text>
+
+  <!-- FORWARD CONNECTORS -->
+  <path d="M 135 180 L 180 180" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 420 180 L 470 180" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 710 180 L 760 180" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 1020 180 L 1070 180" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+
+  <!-- Turn from row 1 to row 2 -->
+  <path d="M 1205 230 L 1205 290" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+
+  <path d="M 1070 342 L 1020 342" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 760 342 L 710 342" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 470 342 L 420 342" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+  <path d="M 180 342 L 135 342" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowGreen2)" />
+
+  <!-- Error arrows downward -->
+  <path d="M 1205 395 L 1205 515" stroke="#EF4444" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowRed2)" />
+  <path d="M 890 395 L 890 515" stroke="#EF4444" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowRed2)" />
+  <path d="M 590 230 L 590 515" stroke="#EF4444" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowRed2)" />
+  <path d="M 300 230 L 300 515" stroke="#EF4444" stroke-width="2" stroke-dasharray="4" marker-end="url(#arrowRed2)" />
+
+</svg>

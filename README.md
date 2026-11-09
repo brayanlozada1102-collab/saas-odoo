@@ -1,3 +1,16 @@
+# SaaS Odoo 18 — Plataforma Cloud Multi-Tenant en AWS & Entorno Local
+
+> **Documentación Oficial del Reto de Arquitectura Cloud:**
+> Consulte los entregables y especificaciones de la plataforma SaaS de producción en la carpeta [`docs/`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs):
+> - 📄 **Documento Maestro de Arquitectura y Justificación (Entregable 2):** [`docs/ARQUITECTURA_SAAS_ODOO_AWS.md`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/ARQUITECTURA_SAAS_ODOO_AWS.md)
+> - 📊 **Diagrama de Arquitectura AWS en Draw.io (Entregable 1):** [`docs/diagrams/arquitectura_saas_odoo_aws.drawio`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/diagrams/arquitectura_saas_odoo_aws.drawio)
+> - 🖼️ **Diagrama Vectorial SVG de Alta Resolución:** [`docs/diagrams/arquitectura_saas_odoo_aws.svg`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/diagrams/arquitectura_saas_odoo_aws.svg)
+> - 🔄 **Flujo de Aprovisionamiento Step Functions (Draw.io & SVG):** [`docs/diagrams/flujo_aprovisionamiento.drawio`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/diagrams/flujo_aprovisionamiento.drawio) | [`docs/diagrams/flujo_onboarding.svg`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/diagrams/flujo_onboarding.svg)
+> - 🎤 **Guía de Sustentación Oral y Respuestas de Evaluación:** [`docs/GUIA_DE_SUSTENTACION.md`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/docs/GUIA_DE_SUSTENTACION.md)
+> - 📦 **Plantillas de Producción (Fargate, Secrets, EFS, Step Functions):** [`templates/`](file:///c:/Users/User/Desktop/Desarrollo/saas-odoo/templates)
+
+---
+
 # SaaS Odoo 18 — Entorno local con Docker Compose
 
 Este repositorio contiene la configuración para ejecutar **Odoo 18** y **PostgreSQL 16** en un entorno local mediante Docker Compose.

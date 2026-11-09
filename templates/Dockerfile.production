@@ -1,0 +1,44 @@
+# ==============================================================================
+# Dockerfile Productivo - SaaS Odoo 18 (AWS Fargate Edition)
+# Diseñado para ejecución sin privilegios de root (Zero-EC2 Serverless Container)
+# ==============================================================================
+
+FROM odoo:18.0
+
+LABEL maintainer="Equipo de Arquitectura SaaS Odoo <devops@saasodoo.com>"
+LABEL version="18.0.1"
+LABEL description="Imagen estandarizada de Odoo 18 para ejecución Multi-Tenant en AWS Fargate"
+
+USER root
+
+# 1. Instalar dependencias esenciales de sistema y utilidades de verificación
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Copiar addons corporativos del repositorio a la ruta estándar de addons de Odoo
+COPY ./addons/auth_oauth_force_https /mnt/extra-addons/auth_oauth_force_https
+COPY ./addons/contacts_company_profile /mnt/extra-addons/contacts_company_profile
+COPY ./addons/contacts_person_profile /mnt/extra-addons/contacts_person_profile
+COPY ./addons/social_network_base /mnt/extra-addons/social_network_base
+
+# 3. Copiar script de arranque productivo
+COPY ./templates/odoo-tenant-entrypoint.sh /entrypoint-saas.sh
+RUN chmod +x /entrypoint-saas.sh
+
+# 4. Asegurar propiedad y permisos para el usuario odoo (UID 101, GID 101)
+RUN chown -R odoo:odoo /mnt/extra-addons /entrypoint-saas.sh /var/lib/odoo
+
+# 5. Ejecutar como usuario no privilegiado (Seguridad Defense-in-Depth)
+USER odoo
+
+# Puertos expuestos: 8069 (HTTP estándar) y 8072 (Long-polling / WebSocket)
+EXPOSE 8069 8072
+
+# Health check nativo de contenedor para Fargate
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8069/web/health || exit 1
+
+ENTRYPOINT ["/entrypoint-saas.sh"]

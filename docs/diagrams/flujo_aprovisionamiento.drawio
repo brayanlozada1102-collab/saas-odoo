@@ -1,0 +1,113 @@
+<mxfile host="app.diagrams.net" modified="2026-11-09T12:00:00.000Z" agent="Antigravity Enterprise Architect" version="24.0.0" type="device">
+  <diagram id="sfn-saas-onboarding-workflow" name="Flujo de Aprovisionamiento Automatizado (Step Functions)">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" background="#F8FAFC" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- TITLE -->
+        <mxCell id="title_box" value="PIPELINE DE APROVISIONAMIENTO AUTOMATIZADO DE TENANTS (SAAS CONTROL PLANE)&#xa;AWS Step Functions • Patrón Saga Orchestrator con Rollback Automático • Duración &lt; 3 minutos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#831843;strokeColor=#500724;fontColor=#FFFFFF;fontSize=14;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="1400" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- START -->
+        <mxCell id="st_start" value="Inicio: Solicitud de&#xa;Nuevo Cliente&#xa;(POST /api/v1/tenants)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="120" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 1 -->
+        <mxCell id="st_1" value="1. Validar Petición&#xa;&amp; Subdominio&#xa;• Verifica disponibilidad DNS&#xa;• Registra estado 'PROVISIONING'&#xa;  en Amazon DynamoDB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="300" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 2 -->
+        <mxCell id="st_2" value="2. Generar Secretos&#xa;AWS Secrets Manager&#xa;• Contraseña DB (32 chars)&#xa;• Master Admin Password Odoo&#xa;• Cifrado con AWS KMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E11D48;strokeColor=#BE123C;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 3 -->
+        <mxCell id="st_3" value="3. Provisionar Base de Datos&#xa;Amazon RDS PostgreSQL&#xa;• CREATE DATABASE db_tenant&#xa;• CREATE USER usr_tenant&#xa;• GRANT &amp; Restricción de permisos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3B82F6;strokeColor=#1D4ED8;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="740" y="120" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 4 -->
+        <mxCell id="st_4" value="4. Provisionar Almacenamiento&#xa;Amazon EFS Access Point&#xa;• Crea /tenants/{tenant_id}/filestore&#xa;• Enforce POSIX UID 101, GID 101&#xa;• Aislamiento estricto de archivos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#047857;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="970" y="120" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 5 -->
+        <mxCell id="st_5" value="5. Desplegar Tareas Fargate&#xa;Amazon ECS (AWS Fargate)&#xa;• Registra Task Definition Odoo 18&#xa;• Crea ECS Service (2 réplicas Multi-AZ)&#xa;• Monta EFS y asocia Secrets" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=#D97706;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="120" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 6 -->
+        <mxCell id="st_6" value="6. Configurar Enrutamiento&#xa;ALB &amp; Route 53&#xa;• Crea Target Group (Port 8069)&#xa;• Añade Listener Rule (Host: tenant.saas.com)&#xa;• Certificado SSL Wildcard activo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0284C7;strokeColor=#0369A1;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="240" width="200" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 7 -->
+        <mxCell id="st_7" value="7. Verificación de Salud (Health Check)&#xa;• Polling a ALB /web/health (HTTP 200)&#xa;• Reintentos automáticos (Max 5 intentos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#64748B;strokeColor=#475569;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="970" y="240" width="190" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 8 -->
+        <mxCell id="st_8" value="8. Notificación y Activación&#xa;• Actualiza DynamoDB a 'ACTIVE'&#xa;• Envía Email con Amazon SES&#xa;• URL y credenciales temporales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#047857;fontColor=#FFFFFF;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="740" y="240" width="190" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- END SUCCESS -->
+        <mxCell id="st_end" value="Fin: Tenant Listo&#xa;&amp; Operativo&#xa;(Tiempo &lt; 3 min)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#10B981;strokeColor=#059669;fontColor=#FFFFFF;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="540" y="240" width="140" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- ROLLBACK / SAGA COMPENSATING TRANSACTIONS -->
+        <mxCell id="rb_box" value="ZONA DE COMPENSACIÓN AUTOMÁTICA (PATRÓN SAGA ROLLBACK ANTE CUALQUIER FALLO)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#EF4444;strokeWidth=2;dashed=1;fontColor=#B91C1C;fontSize=11;fontStyle=1;verticalAlign=top;align=left;spacingLeft=15;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="100" y="380" width="1400" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_alb" value="Compensación 1:&#xa;Eliminar Regla ALB&#xa;&amp; Target Group" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="440" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_fargate" value="Compensación 2:&#xa;Destruir ECS Service&#xa;&amp; Desregistrar Task Def" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="970" y="440" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_efs" value="Compensación 3:&#xa;Eliminar EFS&#xa;Access Point" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="740" y="440" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_db" value="Compensación 4:&#xa;DROP DATABASE&#xa;&amp; DROP USER en RDS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="510" y="440" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_sec" value="Compensación 5:&#xa;Eliminar Secretos en&#xa;AWS Secrets Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DC2626;strokeColor=#B91C1C;fontColor=#FFFFFF;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="440" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rb_notify" value="Notificar Alerta SRE&#xa;&amp; Marcar FAILED en DynamoDB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#7F1D1D;strokeColor=#450A0A;fontColor=#FFFFFF;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="280" y="515" width="1100" height="35" as="geometry" />
+        </mxCell>
+
+        <!-- FORWARD ARROWS -->
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_start" target="st_1" />
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_1" target="st_2" />
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_2" target="st_3" />
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_3" target="st_4" />
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_4" target="st_5" />
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_5" target="st_6" />
+        <mxCell id="a7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_6" target="st_7" />
+        <mxCell id="a8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_7" target="st_8" />
+        <mxCell id="a9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#059669;strokeWidth=2;" edge="1" parent="1" source="st_8" target="st_end" />
+
+        <!-- CATCH ERROR ARROWS TO ROLLBACK -->
+        <mxCell id="c6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="st_6" target="rb_alb" />
+        <mxCell id="c5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="st_5" target="rb_fargate" />
+        <mxCell id="c4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="st_4" target="rb_efs" />
+        <mxCell id="c3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="st_3" target="rb_db" />
+        <mxCell id="c2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#DC2626;strokeWidth=2;dashed=1;" edge="1" parent="1" source="st_2" target="rb_sec" />
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

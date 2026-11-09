@@ -1,0 +1,300 @@
+{
+  "Comment": "AWS Step Functions - Onboarding y Aprovisionamiento Automatizado de Tenants SaaS Odoo 18 (Patrón Saga)",
+  "StartAt": "ValidateTenantInput",
+  "States": {
+    "ValidateTenantInput": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-validate-tenant-input",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "subdomain.$": "$.subdomain",
+          "tier.$": "$.tier",
+          "admin_email.$": "$.admin_email"
+        }
+      },
+      "ResultPath": "$.validationResult",
+      "Next": "CreateDynamoDBRecord",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailureAndExit"
+        }
+      ]
+    },
+    "CreateDynamoDBRecord": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "saas-tenants-registry",
+        "Item": {
+          "tenant_id": { "S.$": "$.tenant_id" },
+          "subdomain": { "S.$": "$.subdomain" },
+          "tier": { "S.$": "$.tier" },
+          "status": { "S": "PROVISIONING" },
+          "admin_email": { "S.$": "$.admin_email" },
+          "created_at": { "S.$": "$$.Execution.StartTime" }
+        }
+      },
+      "ResultPath": "$.dynamoResult",
+      "Next": "GenerateTenantSecrets",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailureAndExit"
+        }
+      ]
+    },
+    "GenerateTenantSecrets": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-generate-secrets",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id"
+        }
+      },
+      "ResultPath": "$.secretsResult",
+      "Next": "ProvisionDatabase",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackSecrets"
+        }
+      ]
+    },
+    "ProvisionDatabase": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-provision-database",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "tier.$": "$.tier"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": ["DatabaseConnectionException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "ResultPath": "$.databaseResult",
+      "Next": "ProvisionEFSStorage",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackDatabase"
+        }
+      ]
+    },
+    "ProvisionEFSStorage": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-provision-efs-accesspoint",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id"
+        }
+      },
+      "ResultPath": "$.efsResult",
+      "Next": "DeployFargateService",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackEFS"
+        }
+      ]
+    },
+    "DeployFargateService": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-deploy-fargate-service",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "tier.$": "$.tier",
+          "access_point_id.$": "$.efsResult.Payload.access_point_id"
+        }
+      },
+      "ResultPath": "$.ecsResult",
+      "Next": "ConfigureALBAndRouting",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackFargate"
+        }
+      ]
+    },
+    "ConfigureALBAndRouting": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-configure-alb-routing",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "subdomain.$": "$.subdomain"
+        }
+      },
+      "ResultPath": "$.albResult",
+      "Next": "WaitForTargetsWarmup",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackALB"
+        }
+      ]
+    },
+    "WaitForTargetsWarmup": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "CheckOdooHealth"
+    },
+    "CheckOdooHealth": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-verify-target-health",
+        "Payload": {
+          "target_group_arn.$": "$.albResult.Payload.target_group_arn"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": ["TargetUnhealthyException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 5,
+          "BackoffRate": 1.5
+        }
+      ],
+      "ResultPath": "$.healthResult",
+      "Next": "UpdateDynamoDBActive",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RollbackALB"
+        }
+      ]
+    },
+    "UpdateDynamoDBActive": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "saas-tenants-registry",
+        "Key": {
+          "tenant_id": { "S.$": "$.tenant_id" }
+        },
+        "UpdateExpression": "SET #st = :active, activated_at = :now",
+        "ExpressionAttributeNames": {
+          "#st": "status"
+        },
+        "ExpressionAttributeValues": {
+          ":active": { "S": "ACTIVE" },
+          ":now": { "S.$": "$$.Execution.StartTime" }
+        }
+      },
+      "ResultPath": "$.dynamoUpdateResult",
+      "Next": "SendWelcomeNotification"
+    },
+    "SendWelcomeNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-send-welcome-email",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "subdomain.$": "$.subdomain",
+          "admin_email.$": "$.admin_email"
+        }
+      },
+      "End": true
+    },
+    "RollbackALB": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-rollback-alb",
+        "Payload": { "tenant_id.$": "$.tenant_id" }
+      },
+      "Next": "RollbackFargate"
+    },
+    "RollbackFargate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-rollback-fargate",
+        "Payload": { "tenant_id.$": "$.tenant_id" }
+      },
+      "Next": "RollbackEFS"
+    },
+    "RollbackEFS": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-rollback-efs",
+        "Payload": { "tenant_id.$": "$.tenant_id" }
+      },
+      "Next": "RollbackDatabase"
+    },
+    "RollbackDatabase": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-rollback-database",
+        "Payload": { "tenant_id.$": "$.tenant_id" }
+      },
+      "Next": "RollbackSecrets"
+    },
+    "RollbackSecrets": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-rollback-secrets",
+        "Payload": { "tenant_id.$": "$.tenant_id" }
+      },
+      "Next": "MarkDynamoDBFailed"
+    },
+    "MarkDynamoDBFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "saas-tenants-registry",
+        "Key": {
+          "tenant_id": { "S.$": "$.tenant_id" }
+        },
+        "UpdateExpression": "SET #st = :failed, error_reason = :err",
+        "ExpressionAttributeNames": {
+          "#st": "status"
+        },
+        "ExpressionAttributeValues": {
+          ":failed": { "S": "FAILED_PROVISIONING" },
+          ":err": { "S.$": "$.error.Cause" }
+        }
+      },
+      "Next": "NotifyFailureAndExit"
+    },
+    "NotifyFailureAndExit": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "arn:aws:lambda:us-east-1:123456789012:function:saas-notify-sre-incident",
+        "Payload": {
+          "tenant_id.$": "$.tenant_id",
+          "error.$": "$.error"
+        }
+      },
+      "End": true
+    }
+  }
+}

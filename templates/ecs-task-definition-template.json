@@ -1,0 +1,126 @@
+{
+  "family": "saas-odoo-tenant-${TENANT_ID}",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "${TASK_CPU}",
+  "memory": "${TASK_MEMORY}",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/saas-odoo-ecs-execution-role",
+  "taskRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/saas-odoo-ecs-task-role",
+  "containerDefinitions": [
+    {
+      "name": "odoo-server",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/saas-odoo:${IMAGE_TAG}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8069,
+          "hostPort": 8069,
+          "protocol": "tcp"
+        },
+        {
+          "containerPort": 8072,
+          "hostPort": 8072,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "TENANT_ID",
+          "value": "${TENANT_ID}"
+        },
+        {
+          "name": "POSTGRES_HOST",
+          "value": "${RDS_ENDPOINT}"
+        },
+        {
+          "name": "POSTGRES_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "POSTGRES_DB",
+          "value": "db_tenant_${TENANT_ID}"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "usr_tenant_${TENANT_ID}"
+        },
+        {
+          "name": "ODOO_WORKERS",
+          "value": "${ODOO_WORKERS}"
+        },
+        {
+          "name": "LOG_LEVEL",
+          "value": "info"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "POSTGRES_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:/saas-odoo/tenants/${TENANT_ID}/db_password"
+        },
+        {
+          "name": "ADMIN_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:${AWS_REGION}:${AWS_ACCOUNT_ID}:secret:/saas-odoo/tenants/${TENANT_ID}/admin_passwd"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "odoo-filestore-efs",
+          "containerPath": "/var/lib/odoo",
+          "readOnly": false
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8069/web/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/saas-odoo/tenants",
+          "awslogs-region": "${AWS_REGION}",
+          "awslogs-stream-prefix": "tenant-${TENANT_ID}"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "odoo-filestore-efs",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "${EFS_FILE_SYSTEM_ID}",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "${EFS_ACCESS_POINT_ID}",
+          "iam": "ENABLED"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "key": "TenantId",
+      "value": "${TENANT_ID}"
+    },
+    {
+      "key": "Tier",
+      "value": "${TENANT_TIER}"
+    },
+    {
+      "key": "Environment",
+      "value": "Production"
+    },
+    {
+      "key": "ManagedBy",
+      "value": "SaaS-ControlPlane"
+    }
+  ]
+}
